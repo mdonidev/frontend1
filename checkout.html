@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Checkout - Kayal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .checkout-container{max-width:1000px;margin:2rem auto;padding:0 1rem;display:grid;grid-template-columns:1fr 360px;gap:2rem}
+        .billing, .summary{background:white;padding:1.5rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+        .field{margin-bottom:0.8rem}
+        label{display:block;margin-bottom:0.25rem;font-weight:600}
+        input,select,textarea{width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:6px}
+        .method-list{display:flex;gap:0.5rem;margin-bottom:1rem}
+        .method{flex:1;padding:0.6rem;border:1px solid #ddd;border-radius:6px;cursor:pointer;text-align:center}
+        .method.active{border-color:var(--primary-color);background:linear-gradient(90deg,var(--primary-color),var(--secondary-color));color:white}
+        .cart-line{display:flex;justify-content:space-between;margin-bottom:0.6rem}
+        .total-line{display:flex;justify-content:space-between;font-weight:800;margin-top:1rem;border-top:1px solid #eee;padding-top:0.8rem}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="logo" href="index.html">KAYAL</a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="cart.html">Cart</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="checkout-container">
+        <div class="billing">
+            <h2>Billing & Payment</h2>
+            <div id="checkoutError" class="error-message" style="display:none;margin-bottom:0.8rem"></div>
+            <div class="field"><label>Full name</label><input id="fullName" required></div>
+            <div class="field"><label>Email</label><input id="billEmail" type="email" required></div>
+            <div class="field"><label>Phone</label><input id="billPhone"></div>
+            <div class="field"><label>Address</label><textarea id="billAddress" rows="2"></textarea></div>
+            <h3>Payment Method</h3>
+            <div class="method-list">
+                <div class="method active" data-method="card">Mock Card</div>
+                <div class="method" data-method="paypal">PayPal</div>
+                <div class="method" data-method="upi">UPI</div>
+                <div class="method" data-method="cod">Cash on Delivery</div>
+            </div>
+            <div id="methodDetails" style="margin-bottom:1rem">
+                <!-- dynamic fields if needed -->
+            </div>
+            <button class="btn btn-primary" id="payBtn">Pay Now</button>
+        </div>
+
+        <aside class="summary">
+            <h3>Your Order</h3>
+            <div id="orderItems"></div>
+            <div class="cart-line"><span>Subtotal</span><span id="subINR">₹0.00</span></div>
+            <div class="cart-line"><span>Tax (10%)</span><span id="taxINR">₹0.00</span></div>
+            <div class="cart-line"><span>Shipping</span><span id="shipINR">₹0.00</span></div>
+            <div class="total-line"><span>Total</span><span id="totalINR">₹0.00</span></div>
+            <p style="font-size:0.85rem;color:#666;margin-top:0.6rem">Prices shown in INR. Payment will be processed using the selected method.</p>
+        </aside>
+    </section>
+
+    <script>
+    const EX_RATE = 82; // USD -> INR
+    function fmtINR(usd){
+        const inr = Number(usd) * EX_RATE;
+        return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(inr);
+    }
+
+    function loadCart(){
+        const saved = localStorage.getItem('kayalCart');
+        return saved ? JSON.parse(saved) : [];
+    }
+
+    function renderOrder(){
+        const cart = loadCart();
+        const container = document.getElementById('orderItems');
+        if(cart.length===0){ container.innerHTML='<p>Your cart is empty</p>'; return; }
+        container.innerHTML = '';
+        let subtotal = 0;
+        cart.forEach(it=>{
+            subtotal += (it.price * it.quantity);
+            const line = document.createElement('div');
+            line.className='cart-line';
+            line.innerHTML = `<span>${it.name} x ${it.quantity}</span><span>${fmtINR(it.price*it.quantity)}</span>`;
+            container.appendChild(line);
+        });
+        const tax = subtotal*0.1;
+        const ship = subtotal>0?5:0; // USD shipping
+        const total = subtotal + tax + ship;
+        document.getElementById('subINR').textContent = fmtINR(subtotal);
+        document.getElementById('taxINR').textContent = fmtINR(tax);
+        document.getElementById('shipINR').textContent = fmtINR(ship);
+        document.getElementById('totalINR').textContent = fmtINR(total);
+        // store USD totals for submission
+        document.getElementById('payBtn').dataset.usdTotal = total;
+    }
+
+    // Payment method selector
+    document.addEventListener('DOMContentLoaded', ()=>{
+        renderOrder();
+        document.querySelectorAll('.method').forEach(m=>m.addEventListener('click', e=>{
+            document.querySelectorAll('.method').forEach(x=>x.classList.remove('active'));
+            m.classList.add('active');
+        }));
+
+        document.getElementById('payBtn').addEventListener('click', handlePay);
+    });
+
+    async function handlePay(){
+        const cart = loadCart();
+        if(cart.length===0){ alert('Cart is empty'); return; }
+        
+        // Validate required fields
+        const fullname = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('billEmail').value.trim();
+        const phone = document.getElementById('billPhone').value.trim();
+        const address = document.getElementById('billAddress').value.trim();
+
+        if (!fullname || !email || !phone || !address) {
+            document.getElementById('checkoutError').style.display = 'block';
+            document.getElementById('checkoutError').textContent = 'Please fill in all required fields (Name, Email, Phone, Address)';
+            return;
+        }
+
+        if (!email.includes('@')) {
+            document.getElementById('checkoutError').style.display = 'block';
+            document.getElementById('checkoutError').textContent = 'Please enter a valid email address';
+            return;
+        }
+
+        const user = localStorage.getItem('kayalUser');
+        const token = localStorage.getItem('kayalToken');
+        if(!user || !token){ alert('Please login to continue'); window.location.href='login.html'; return; }
+
+        // Simulate payment processing for mock methods
+        const method = document.querySelector('.method.active').dataset.method;
+        document.getElementById('payBtn').disabled = true;
+        document.getElementById('payBtn').textContent = 'Processing...';
+
+        // Simulated delay (and special handling for PayPal)
+        if (method === 'paypal') {
+            // In a real integration you'd redirect to PayPal Checkout; here we simulate a quick external flow
+            const win = window.open('about:blank', '_blank');
+            if (win) {
+                win.document.write('<p style="font-family: sans-serif; padding: 2rem">Simulated PayPal checkout... <button id="finish">Complete Payment</button></p>');
+                win.document.getElementById('finish').addEventListener('click', () => { win.close(); });
+            } else {
+                alert('Popup blocked — continuing with mock PayPal flow');
+            }
+            await new Promise(r=>setTimeout(r, 1200));
+        } else {
+            await new Promise(r=>setTimeout(r, 1200));
+        }
+
+        // For real integrations, you'd call payment gateway here.
+        // Prepare order payload using USD amounts (server expects USD prices)
+        const items = cart.map(i=>({ 
+            name: i.name, 
+            quantity: i.quantity, 
+            price: i.price,
+            size: i.size || null,
+            color: i.color || null
+        }));
+        const totalAmountUsd = Number(document.getElementById('payBtn').dataset.usdTotal) || 0;
+
+        try{
+            const res = await fetch('https://backend-production-4bcf.up.railway.app/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type':'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ 
+                    userId: JSON.parse(user).id, 
+                    items, 
+                    totalAmount: totalAmountUsd,
+                    billingName: fullname,
+                    billingEmail: email,
+                    billingPhone: phone,
+                    billingAddress: address,
+                    paymentMethod: method
+                })
+            });
+            const data = await res.json();
+            if(res.ok){
+                localStorage.removeItem('kayalCart');
+                alert('Payment successful. Order placed: ' + data.orderNumber);
+                window.location.href = 'index.html';
+            } else {
+                throw new Error(data.message || 'Order failed');
+            }
+        }catch(err){
+            document.getElementById('checkoutError').style.display='block';
+            document.getElementById('checkoutError').textContent = err.message;
+            console.error(err);
+        }finally{
+            document.getElementById('payBtn').disabled = false;
+            document.getElementById('payBtn').textContent = 'Pay Now';
+        }
+    }
+    </script>
+</body>
+</html>

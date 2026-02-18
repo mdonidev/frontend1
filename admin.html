@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Kayal T-Shirt Store</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="logo" href="index.html">KAYAL ADMIN</a>
+            <div id="mobileHamburger" class="hamburger" aria-label="Toggle menu" aria-expanded="false" role="button" tabindex="0">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Back to Shop</a></li>
+                <li class="user-menu">
+                    <button class="user-menu-btn">👤 Admin ▼</button>
+                    <div class="dropdown-menu" style="display: none;">
+                        <a href="#" onclick="handleLogout(event)">Logout</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Admin Container -->
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h3>Dashboard</h3>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="sidebar-link active" onclick="switchTab('dashboard')">
+                    📊 Dashboard
+                </a>
+                <a href="#products" class="sidebar-link" onclick="switchTab('products')">
+                    📦 Products
+                </a>
+                <a href="#users" class="sidebar-link" onclick="switchTab('users')">
+                    👥 Users
+                </a>
+                <a href="#orders" class="sidebar-link" onclick="switchTab('orders')">
+                    📋 Orders
+                </a>
+                <a href="#settings" class="sidebar-link" onclick="switchTab('settings')">
+                    ⚙️ Site Settings
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <!-- Dashboard Tab -->
+            <section id="dashboard" class="admin-tab active">
+                <h1>Dashboard</h1>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <p class="stat-number" id="statUsers">0</p>
+                        <span class="stat-label">Active Users</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Products</h3>
+                        <p class="stat-number" id="statProducts">0</p>
+                        <span class="stat-label">In Catalog</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Orders</h3>
+                        <p class="stat-number" id="statOrders">0</p>
+                        <span class="stat-label">All Time</span>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <p class="stat-number" id="statRevenue" data-usd="0">$0.00</p>
+                        <span class="stat-label">Total Sales</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-info">
+                    <p>Welcome to the Kayal Admin Dashboard!</p>
+                    <p>Use the navigation on the left to manage products, users, and orders.</p>
+                </div>
+            </section>
+
+            <!-- Products Tab -->
+            <section id="products" class="admin-tab">
+                <div class="tab-header">
+                    <h1>Manage Products</h1>
+                    <button class="btn btn-primary" onclick="openProductModal()">➕ Add New Product</button>
+                </div>
+
+                <div id="productError" class="error-message" style="display: none;"></div>
+                <div id="productSuccess" class="success-message" style="display: none;"></div>
+
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <tr><td colspan="7" class="text-center">Loading products...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Users Tab -->
+            <section id="users" class="admin-tab">
+                <h1>Manage Users</h1>
+
+                <div id="userError" class="error-message" style="display: none;"></div>
+                <div id="userSuccess" class="success-message" style="display: none;"></div>
+
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>City</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr><td colspan="7" class="text-center">Loading users...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Orders Tab -->
+            <section id="orders" class="admin-tab">
+                <h1>Manage Orders</h1>
+
+                <div id="orderError" class="error-message" style="display: none;"></div>
+                <div id="orderSuccess" class="success-message" style="display: none;"></div>
+
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>User ID</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr><td colspan="6" class="text-center">Loading orders...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Settings Tab -->
+            <section id="settings" class="admin-tab">
+                <h1>Site Settings</h1>
+                <p>Customize homepage emojis and icons</p>
+
+                <div id="settingsError" class="error-message" style="display: none;"></div>
+                <div id="settingsSuccess" class="success-message" style="display: none;"></div>
+
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <label>Hero Section</label>
+                        <div style="margin-bottom: 0.5rem;">
+                            <input type="text" id="heroEmoji" maxlength="2" placeholder="👕">
+                            <small>or paste image URL</small>
+                        </div>
+                        <input type="text" id="heroEmojiUrl" placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+
+                    <div class="setting-item">
+                        <label>Classic White</label>
+                        <div style="margin-bottom: 0.5rem;">
+                            <input type="text" id="classicWhiteEmoji" maxlength="2" placeholder="👕">
+                            <small>or image URL</small>
+                        </div>
+                        <input type="text" id="classicWhiteUrl" placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+
+                    <div class="setting-item">
+                        <label>Color Bold</label>
+                        <div style="margin-bottom: 0.5rem;">
+                            <input type="text" id="colorBoldEmoji" maxlength="2" placeholder="🎨">
+                            <small>or image URL</small>
+                        </div>
+                        <input type="text" id="colorBoldUrl" placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+
+                    <div class="setting-item">
+                        <label>Premium Comfort</label>
+                        <div style="margin-bottom: 0.5rem;">
+                            <input type="text" id="premiumComfortEmoji" maxlength="2" placeholder="✨">
+                            <small>or image URL</small>
+                        </div>
+                        <input type="text" id="premiumComfortUrl" placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+
+                    <div class="setting-item">
+                        <label>Signature Edition</label>
+                        <div style="margin-bottom: 0.5rem;">
+                            <input type="text" id="signatureEditionEmoji" maxlength="2" placeholder="🌟">
+                            <small>or image URL</small>
+                        </div>
+                        <input type="text" id="signatureEditionUrl" placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+
+                    <div class="setting-item">
+                        <label>Shipping Icon</label>
+                        <div style="margin-bottom: 0.5rem;">
+                            <input type="text" id="shippingIcon" maxlength="2" placeholder="🚚">
+                            <small>or image URL</small>
+                        </div>
+                        <input type="text" id="shippingUrl" placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+
+                    <div class="setting-item">
+                        <label>Returns Icon</label>
+                        <div style="margin-bottom: 0.5rem;">
+                            <input type="text" id="returnsIcon" maxlength="2" placeholder="🔄">
+                            <small>or image URL</small>
+                        </div>
+                        <input type="text" id="returnsUrl" placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+
+                    <div class="setting-item">
+                        <label>Support Icon</label>
+                        <div style="margin-bottom: 0.5rem;">
+                            <input type="text" id="supportIcon" maxlength="2" placeholder="💬">
+                            <small>or image URL</small>
+                        </div>
+                        <input type="text" id="supportUrl" placeholder="https://..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                    <button type="button" class="btn btn-secondary" onclick="loadSettings()">Refresh</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="productModalTitle">Add New Product</h2>
+                <button class="modal-close" onclick="closeProductModal()">&times;</button>
+            </div>
+            
+            <form id="productForm" onsubmit="handleProductSubmit(event)">
+                <div class="form-group">
+                    <label for="productName">Product Name *</label>
+                    <input type="text" id="productName" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productDescription">Description</label>
+                    <textarea id="productDescription" name="description" rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="productPrice">Price *</label>
+                        <input type="number" id="productPrice" name="price" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productStock">Stock</label>
+                        <input type="number" id="productStock" name="stock" value="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="productCategory">Category</label>
+                    <input type="text" id="productCategory" name="category" placeholder="e.g., Classic, Premium">
+                </div>
+
+                <div class="form-group">
+                    <label for="productSizes">Sizes (comma-separated)</label>
+                    <input type="text" id="productSizes" name="sizes" placeholder="XS,S,M,L,XL">
+                </div>
+
+                <div class="form-group">
+                    <label for="productColors">Colors (comma-separated)</label>
+                    <input type="text" id="productColors" name="colors" placeholder="White,Black,Blue">
+                </div>
+
+                <div class="form-group">
+                    <label for="productImage">Image URL</label>
+                    <input type="text" id="productImage" name="image" placeholder="https://...">
+                </div>
+
+                <div class="form-group checkbox">
+                    <input type="checkbox" id="productActive" name="isActive" checked>
+                    <label for="productActive">Active</label>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeProductModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Status Modal -->
+    <div id="orderModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Update Order Status</h2>
+                <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+            </div>
+            
+            <form id="orderForm" onsubmit="handleOrderStatusUpdate(event)">
+                <input type="hidden" id="orderIdInput">
+
+                <div class="form-group">
+                    <label for="orderStatus">Status *</label>
+                    <select id="orderStatus" name="status" required>
+                        <option value="">Select Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeOrderModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

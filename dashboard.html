@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Dashboard - Kayal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .dashboard-container{max-width:1200px;margin:2rem auto;padding:0 1rem}
+        .welcome-section{background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));color:white;padding:2rem;border-radius:8px;margin-bottom:2rem;text-align:center}
+        .dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem}
+        .card{background:white;padding:1.5rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+        .card h3{margin-top:0;color:var(--primary-color)}
+        .order-item{display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid #eee}
+        .order-item:last-child{border-bottom:none}
+        .btn{margin-top:1rem}
+        .no-data{color:#666;font-style:italic}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="logo" href="index.html">KAYAL</a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="dashboard-container">
+        <section class="welcome-section">
+            <h1>Welcome back, <span id="userName">User</span>!</h1>
+            <p>Manage your account, view orders, and shop with ease.</p>
+        </section>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Account Information</h3>
+                <p><strong>Name:</strong> <span id="fullName"></span></p>
+                <p><strong>Email:</strong> <span id="userEmail"></span></p>
+                <p><strong>Phone:</strong> <span id="userPhone"></span></p>
+                <p><strong>Address:</strong> <span id="userAddress"></span></p>
+                <button class="btn btn-secondary" onclick="window.location.href='profile.html'">Edit Profile</button>
+            </div>
+
+            <div class="card">
+                <h3>Recent Orders</h3>
+                <div id="ordersList">
+                    <p class="no-data">Loading orders...</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.location.href='orders.html'">View All Orders</button>
+            </div>
+
+            <div class="card">
+                <h3>My Favorites</h3>
+                <div id="wishlistItems">
+                    <p class="no-data">No favorites yet.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.location.href='shop.html'">Add Items</button>
+            </div>
+
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <button class="btn btn-primary" onclick="window.location.href='shop.html'">Continue Shopping</button>
+                <button class="btn btn-secondary" onclick="window.location.href='cart.html'">View Cart & Checkout</button>
+                <button class="btn btn-outline" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('kayalUser') || '{}');
+            const token = localStorage.getItem('kayalToken');
+
+            if (!user.id || !token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Populate user info
+            document.getElementById('userName').textContent = user.firstName || 'User';
+            document.getElementById('fullName').textContent = `${user.firstName} ${user.lastName}`;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userPhone').textContent = user.phone || 'Not provided';
+            document.getElementById('userAddress').textContent = user.address ? `${user.address}, ${user.city}, ${user.zipCode}` : 'Not provided';
+
+            // Load recent orders
+            try {
+                const response = await fetch(`${API_URL}/user/${user.id}/orders`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const orders = await response.json();
+                const ordersList = document.getElementById('ordersList');
+
+                if (orders.length === 0) {
+                    ordersList.innerHTML = '<p class="no-data">No orders yet. Start shopping!</p>';
+                } else {
+                    ordersList.innerHTML = '';
+                    orders.slice(0, 3).forEach(order => {  // Show last 3 orders
+                        const orderItem = document.createElement('div');
+                        orderItem.className = 'order-item';
+                        orderItem.innerHTML = `
+                            <span>Order #${order.orderNumber}</span>
+                            <span>$${order.totalAmount} - ${order.status}</span>
+                        `;
+                        ordersList.appendChild(orderItem);
+                    });
+                }
+            } catch (error) {
+                document.getElementById('ordersList').innerHTML = '<p class="no-data">Error loading orders.</p>';
+                console.error('Error loading orders:', error);
+            }
+
+            // Load favorites/wishlist
+            const wishlist = JSON.parse(localStorage.getItem('kayalWishlist') || '[]');
+            const wishlistEl = document.getElementById('wishlistItems');
+            if (wishlist.length > 0) {
+                wishlistEl.innerHTML = wishlist.map(item => `
+                    <div class="order-item">
+                        <span>${item.name}</span>
+                        <span>$${item.price}</span>
+                    </div>
+                `).join('');
+            } else {
+                wishlistEl.innerHTML = '<p class="no-data">No favorites yet.</p>';
+            }
+        });
+
+        function handleLogout() {
+            localStorage.removeItem('kayalUser');
+            localStorage.removeItem('kayalToken');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

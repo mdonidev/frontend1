@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Profile - Kayal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .profile-container{max-width:600px;margin:2rem auto;padding:0 1rem}
+        .profile-card{background:white;padding:2rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+        .field{margin-bottom:1rem}
+        label{display:block;margin-bottom:0.25rem;font-weight:600}
+        input,textarea{width:100%;padding:0.6rem;border:1px solid #ddd;border-radius:6px}
+        .btn{margin-top:1rem}
+        .success-message{color:green;margin-bottom:1rem;display:none}
+        .error-message{color:red;margin-bottom:1rem;display:none}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="logo" href="index.html">KAYAL</a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="profile-container">
+        <div class="profile-card">
+            <h1>Edit Profile</h1>
+            <div id="successMessage" class="success-message">Profile updated successfully!</div>
+            <div id="errorMessage" class="error-message"></div>
+            <form id="profileForm">
+                <div class="field">
+                    <label>First Name</label>
+                    <input id="firstName" required>
+                </div>
+                <div class="field">
+                    <label>Last Name</label>
+                    <input id="lastName" required>
+                </div>
+                <div class="field">
+                    <label>Email</label>
+                    <input id="email" type="email" required>
+                </div>
+                <div class="field">
+                    <label>Phone</label>
+                    <input id="phone">
+                </div>
+                <div class="field">
+                    <label>Address</label>
+                    <textarea id="address" rows="2"></textarea>
+                </div>
+                <div class="field">
+                    <label>City</label>
+                    <input id="city">
+                </div>
+                <div class="field">
+                    <label>Zip Code</label>
+                    <input id="zipCode">
+                </div>
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+            </form>
+        </div>
+    </main>
+
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('kayalUser') || '{}');
+            const token = localStorage.getItem('kayalToken');
+
+            if (!user.id || !token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Populate form
+            document.getElementById('firstName').value = user.firstName || '';
+            document.getElementById('lastName').value = user.lastName || '';
+            document.getElementById('email').value = user.email || '';
+            document.getElementById('phone').value = user.phone || '';
+            document.getElementById('address').value = user.address || '';
+            document.getElementById('city').value = user.city || '';
+            document.getElementById('zipCode').value = user.zipCode || '';
+
+            // Handle form submission
+            document.getElementById('profileForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const updatedUser = {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    address: document.getElementById('address').value,
+                    city: document.getElementById('city').value,
+                    zipCode: document.getElementById('zipCode').value
+                };
+
+                try {
+                    const response = await fetch(`${API_URL}/user/${user.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token
+                        },
+                        body: JSON.stringify(updatedUser)
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // Update local storage
+                        localStorage.setItem('kayalUser', JSON.stringify({ ...user, ...updatedUser }));
+                        document.getElementById('successMessage').style.display = 'block';
+                        document.getElementById('errorMessage').style.display = 'none';
+                    } else {
+                        throw new Error(data.message || 'Update failed');
+                    }
+                } catch (error) {
+                    document.getElementById('errorMessage').textContent = error.message;
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('successMessage').style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

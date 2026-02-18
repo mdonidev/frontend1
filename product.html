@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - Kayal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .product-details-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .product-details { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .product-image-section { display: flex; align-items: center; justify-content: center; min-height: 400px; }
+        .product-large-image { font-size: 150px; text-align: center; }
+        .product-large-image img { max-width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; }
+        .product-info h1 { color: var(--dark-color); margin-bottom: 0.5rem; }
+        .product-price { font-size: 2rem; color: var(--primary-color); font-weight: bold; margin: 1.5rem 0; }
+        .product-desc { color: #555; line-height: 1.8; margin-bottom: 1.5rem; }
+        .product-sizes, .product-colors { margin-bottom: 2rem; }
+        .size-label, .color-label { display: block; font-weight: 600; margin-bottom: 0.8rem; }
+        .size-options, .color-options { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .size-btn, .color-btn { padding: 0.6rem 1.2rem; border: 2px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
+        .size-btn:hover, .color-btn:hover { border-color: var(--primary-color); }
+        .size-btn.selected, .color-btn.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .product-quantity { margin-bottom: 2rem; }
+        .qty-label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        .qty-control { display: flex; align-items: center; gap: 0.5rem; width: fit-content; }
+        .qty-btn { width: 40px; height: 40px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; font-size: 1.2rem; }
+        .qty-btn:hover { background: #f0f0f0; }
+        .qty-input { width: 60px; text-align: center; border: 1px solid #ddd; padding: 0.5rem; border-radius: 4px; }
+        .action-buttons { display: flex; gap: 1rem; margin-top: 2rem; }
+        .add-to-cart-btn { flex: 1; padding: 1rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .add-to-cart-btn:hover { background: #FF5252; }
+        .wishlist-btn { padding: 1rem 1.5rem; background: white; border: 2px solid var(--secondary-color); color: var(--secondary-color); border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .wishlist-btn:hover { background: var(--secondary-color); color: white; }
+        #errorMsg { background: #FFE5E5; color: #c00; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #FF6B6B; }
+        #successMsg { background: #E5F9F7; color: #080; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #4ECDC4; }
+        @media (max-width: 768px) {
+            .product-details { grid-template-columns: 1fr; gap: 1.5rem; }
+            .product-large-image { font-size: 80px; }
+            .product-price { font-size: 1.5rem; }
+            .action-buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="logo" href="index.html">KAYAL</a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li id="adminNavItem" style="display:none;"><a href="admin.html">Admin</a></li>
+                <li><a href="cart.html" class="cart-icon">🛒 Cart (0)</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="product-details-container">
+        <div id="errorMsg" style="display: none;"></div>
+        
+        <div class="product-details">
+            <div class="product-image-section">
+                <div id="productImage" class="product-large-image">👕</div>
+            </div>
+
+            <div class="product-info">
+                <h1 id="productName">Loading...</h1>
+                <p id="productDesc" class="product-desc"></p>
+                <div class="product-price" id="productPrice">$0.00</div>
+
+                <div class="product-sizes">
+                    <label class="size-label">Select Size *</label>
+                    <div class="size-options" id="sizeOptions"></div>
+                </div>
+
+                <div class="product-colors">
+                    <label class="color-label">Select Color</label>
+                    <div class="color-options" id="colorOptions"></div>
+                </div>
+
+                <div class="product-quantity">
+                    <label class="qty-label">Quantity</label>
+                    <div class="qty-control">
+                        <button class="qty-btn" id="decreaseBtn">−</button>
+                        <input type="number" id="quantity" class="qty-input" value="1" min="1">
+                        <button class="qty-btn" id="increaseBtn">+</button>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="add-to-cart-btn" id="addCartBtn">Add to Cart</button>
+                    <button class="wishlist-btn" id="wishlistBtn">♥ Wishlist</button>
+                </div>
+
+                <p id="successMsg" style="display: none;"></p>
+            </div>
+        </div>
+    </main>
+
+        <script src="auth.js"></script>
+        <script>
+                //const API_URL = 'http://localhost:3000/api';
+                const EXCHANGE_RATE = 82;
+
+        let currentProduct = null;
+        let selectedSize = '';
+        let selectedColor = '';
+
+        function formatPriceINR(usd) {
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(usd * EXCHANGE_RATE);
+        }
+
+        function setupMobileMenu() {
+            const hamburger = document.querySelector('.hamburger');
+            const navMenu = document.querySelector('.nav-menu');
+            if (!hamburger || !navMenu) return;
+            hamburger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navMenu.classList.toggle('mobile-open');
+                hamburger.classList.toggle('is-active');
+            });
+            navMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navMenu.classList.remove('mobile-open');
+                    hamburger.classList.remove('is-active');
+                });
+            });
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.nav-container')) {
+                    navMenu.classList.remove('mobile-open');
+                    hamburger.classList.remove('is-active');
+                }
+            });
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('kayalCart') || '[]');
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            document.querySelectorAll('.cart-icon').forEach(el => {
+                el.textContent = `🛒 Cart (${count})`;
+            });
+        }
+
+        function showError(msg) {
+            const err = document.getElementById('errorMsg');
+            err.textContent = msg;
+            err.style.display = 'block';
+            console.error(msg);
+        }
+
+        function showSuccess(msg) {
+            const succ = document.getElementById('successMsg');
+            succ.textContent = msg;
+            succ.style.display = 'block';
+            setTimeout(() => { succ.style.display = 'none'; }, 3000);
+        }
+
+        async function loadProductDetails(productId) {
+            try {
+                console.log('Loading product with ID:', productId);
+                const url = `${API_URL}/products/${productId}`;
+                console.log('Fetching from URL:', url);
+                
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Product data received:', data);
+                
+                currentProduct = data;
+                displayProductDetails();
+            } catch (error) {
+                console.error('Error loading product:', error);
+                showError('Cannot load product: ' + error.message);
+            }
+        }
+
+        function displayProductDetails() {
+            if (!currentProduct) {
+                showError('No product data');
+                return;
+            }
+
+            console.log('Displaying product details for:', currentProduct.name);
+            
+            document.getElementById('productName').textContent = currentProduct.name;
+            document.getElementById('productDesc').textContent = currentProduct.description || 'No description';
+            document.getElementById('productPrice').textContent = formatPriceINR(currentProduct.price);
+
+            // Handle image - URL or emoji
+            const imageDiv = document.getElementById('productImage');
+            if (currentProduct.image) {
+                if (currentProduct.image.startsWith('http')) {
+                    imageDiv.innerHTML = `<img src="${currentProduct.image}" alt="${currentProduct.name}" style="border-radius:8px; max-width:100%; max-height:400px;" onerror="this.parentElement.textContent='👕'">`;
+                } else {
+                    imageDiv.textContent = currentProduct.image;
+                }
+            } else {
+                imageDiv.textContent = '👕';
+            }
+
+            // Parse sizes - handle both double-encoded and properly-encoded JSON
+            let sizes = [];
+            try {
+                let sizesData = currentProduct.sizes;
+                if (typeof sizesData === 'string') {
+                    // Try to parse the JSON string
+                    sizesData = JSON.parse(sizesData);
+                    // If it's a string, try parsing again (handles double-encoding)
+                    if (typeof sizesData === 'string') {
+                        sizesData = JSON.parse(sizesData);
+                    }
+                }
+                sizes = Array.isArray(sizesData) ? sizesData : [];
+            } catch (e) {
+                console.error('Error parsing sizes:', e, currentProduct.sizes);
+                sizes = [];
+            }
+
+            // Parse colors - handle both double-encoded and properly-encoded JSON
+            let colors = [];
+            try {
+                let colorsData = currentProduct.colors;
+                if (typeof colorsData === 'string') {
+                    // Try to parse the JSON string
+                    colorsData = JSON.parse(colorsData);
+                    // If it's a string, try parsing again (handles double-encoding)
+                    if (typeof colorsData === 'string') {
+                        colorsData = JSON.parse(colorsData);
+                    }
+                }
+                colors = Array.isArray(colorsData) ? colorsData : [];
+            } catch (e) {
+                console.error('Error parsing colors:', e, currentProduct.colors);
+                colors = [];
+            }
+
+            const sizeDiv = document.getElementById('sizeOptions');
+            if (sizes.length > 0) {
+                sizeDiv.innerHTML = '';
+                sizes.forEach(size => {
+                    const btn = document.createElement('button');
+                    btn.className = 'size-btn';
+                    btn.textContent = size;
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        selectedSize = size;
+                        document.getElementById('errorMsg').style.display = 'none';
+                    });
+                    sizeDiv.appendChild(btn);
+                });
+            }
+
+            const colorDiv = document.getElementById('colorOptions');
+            if (colors.length > 0) {
+                colorDiv.innerHTML = '';
+                colors.forEach(color => {
+                    const btn = document.createElement('button');
+                    btn.className = 'color-btn';
+                    btn.textContent = color;
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        selectedColor = color;
+                    });
+                    colorDiv.appendChild(btn);
+                });
+            }
+
+            // If admin token exists, show an Edit Product button linking to admin edit modal
+            try {
+                let editBtn = document.getElementById('adminEditBtn');
+                if (!editBtn) {
+                    editBtn = document.createElement('button');
+                    editBtn.id = 'adminEditBtn';
+                    editBtn.className = 'wishlist-btn';
+                    editBtn.style.marginLeft = '0.5rem';
+                    editBtn.textContent = 'Edit Product';
+                    editBtn.addEventListener('click', () => {
+                        if (currentProduct && currentProduct.id) {
+                            window.location.href = `admin.html?edit=${currentProduct.id}`;
+                        }
+                    });
+                    const actions = document.querySelector('.action-buttons');
+                    if (actions) actions.appendChild(editBtn);
+                }
+
+                const token = localStorage.getItem('kayalToken');
+                if (token) {
+                    editBtn.style.display = 'inline-block';
+                } else {
+                    editBtn.style.display = 'none';
+                }
+            } catch (e) {
+                console.warn('Could not render admin edit button', e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupMobileMenu();
+            updateCartCount();
+
+            const productId = new URLSearchParams(window.location.search).get('id');
+            // Show Admin link if an auth token exists (server will still enforce admin rights)
+            const token = localStorage.getItem('kayalToken');
+            if (token) {
+                const adminItem = document.getElementById('adminNavItem');
+                if (adminItem) adminItem.style.display = 'inline-block';
+            }
+
+            // Try to get product id from querystring, then fallback to last prefetched product in localStorage
+            let prodId = new URLSearchParams(window.location.search).get('id');
+            const lastPrefetchedId = localStorage.getItem('kayalLastProductId');
+            const lastPrefetched = localStorage.getItem('kayalLastProduct');
+
+            if (!prodId) {
+                if (lastPrefetchedId) {
+                    prodId = lastPrefetchedId;
+                } else if (lastPrefetched) {
+                    try {
+                        currentProduct = JSON.parse(lastPrefetched);
+                        displayProductDetails();
+                    } catch (e) {
+                        console.warn('Error parsing lastPrefetched product:', e);
+                        showError('No product ID. Go back to shop.');
+                        return;
+                    }
+                }
+            }
+
+            if (prodId) {
+                loadProductDetails(prodId);
+            }
+
+            document.getElementById('increaseBtn').addEventListener('click', () => {
+                const qty = document.getElementById('quantity');
+                qty.value = Math.max(1, parseInt(qty.value || 1) + 1);
+            });
+
+            document.getElementById('decreaseBtn').addEventListener('click', () => {
+                const qty = document.getElementById('quantity');
+                qty.value = Math.max(1, parseInt(qty.value || 1) - 1);
+            });
+
+            document.getElementById('addCartBtn').addEventListener('click', () => {
+                if (!currentProduct) {
+                    showError('Product not loaded');
+                    return;
+                }
+                if (!selectedSize) {
+                    showError('Please select a size');
+                    return;
+                }
+
+                const qty = parseInt(document.getElementById('quantity').value) || 1;
+                const item = {
+                    id: currentProduct.id,
+                    name: currentProduct.name,
+                    price: currentProduct.price,
+                    quantity: qty,
+                    size: selectedSize,
+                    color: selectedColor || 'Default'
+                };
+
+                let cart = JSON.parse(localStorage.getItem('kayalCart') || '[]');
+                const existing = cart.find(x => x.id === item.id && x.size === item.size && x.color === item.color);
+                if (existing) {
+                    existing.quantity += qty;
+                } else {
+                    cart.push(item);
+                }
+                localStorage.setItem('kayalCart', JSON.stringify(cart));
+                updateCartCount();
+                // If a global updateCartCount exists on other pages, call it too
+                if (window.updateCartCount && window !== window.top) {
+                    try { window.updateCartCount(); } catch (e) { /* ignore */ }
+                } else if (window.updateCartCount) {
+                    try { window.updateCartCount(); } catch(e){}
+                }
+                showSuccess(`${currentProduct.name} (${selectedSize}) added to cart!`);
+            });
+
+            document.getElementById('wishlistBtn').addEventListener('click', async () => {
+                if (!currentProduct) {
+                    showError('Product not loaded');
+                    return;
+                }
+
+                let wishlist = JSON.parse(localStorage.getItem('kayalWishlist') || '[]');
+                if (!wishlist.find(x => String(x.id) === String(currentProduct.id))) {
+                    wishlist.push(currentProduct);
+                    localStorage.setItem('kayalWishlist', JSON.stringify(wishlist));
+                    showSuccess(`${currentProduct.name} added to wishlist ♥`);
+                } else {
+                    showSuccess(`${currentProduct.name} already in wishlist`);
+                }
+
+                // If logged in, also sync to server wishlist
+                try {
+                    const token = localStorage.getItem('kayalToken');
+                    const user = localStorage.getItem('kayalUser');
+                    if (token && user) {
+                        const uid = JSON.parse(user).id;
+                        // POST to server wishlist endpoint
+                        const res = await fetch(`${API_URL}/wishlist`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ userId: uid, productName: currentProduct.name, price: currentProduct.price })
+                        });
+
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            console.warn('Server wishlist sync failed:', err.message || res.statusText);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error syncing wishlist to server:', e);
+                }
+            });
+
+            // Reflect wishlist state on load (mark wishlist button if product is in wishlist)
+            try {
+                const wl = JSON.parse(localStorage.getItem('kayalWishlist') || '[]');
+                const inWishlist = wl.some(x => String(x.id) === String(currentProduct.id));
+                const wlBtn = document.getElementById('wishlistBtn');
+                if (wlBtn) {
+                    if (inWishlist) {
+                        wlBtn.classList.add('selected');
+                        wlBtn.textContent = '♥ Wishlisted';
+                    } else {
+                        wlBtn.classList.remove('selected');
+                        wlBtn.textContent = '♥ Wishlist';
+                    }
+                }
+            } catch (e) {
+                /* ignore */
+            }
+        });
+    </script>
+</body>
+</html>

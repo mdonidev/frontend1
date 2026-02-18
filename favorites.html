@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Favorites - Kayal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .fav-container{max-width:1100px;margin:2rem auto;padding:0 1rem}
+        .fav-list{display:grid;grid-template-columns:1fr;gap:1rem}
+        .fav-item{background:white;padding:1rem;border-radius:8px;display:flex;align-items:center;gap:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+        .fav-item img{width:90px;height:90px;object-fit:cover;border-radius:6px}
+        .fav-actions{margin-left:auto;display:flex;gap:0.5rem}
+        .btn{padding:0.6rem 0.9rem;border-radius:6px;border:1px solid #ddd;cursor:pointer}
+        .btn.primary{background:var(--primary-color);color:white;border:none}
+        .empty{background:white;padding:2rem;border-radius:8px;text-align:center;color:#666}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="logo" href="index.html">KAYAL</a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="cart.html" class="cart-icon">🛒 Cart (0)</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="fav-container">
+        <h1>Your Favorites</h1>
+        <div id="favList" class="fav-list">
+            <div class="empty">Loading favorites...</div>
+        </div>
+    </main>
+
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+    <script>
+    //const API_URL = 'http://localhost:3000/api';
+    function formatINR(usd){
+        return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(Number(usd)*82);
+    }
+
+    function renderLocalFavorites(items){
+        const container = document.getElementById('favList');
+        container.innerHTML = '';
+        if(!items || items.length===0){
+            container.innerHTML = '<div class="empty">Your favorites list is empty.</div>';
+            return;
+        }
+
+        items.forEach(it=>{
+            const el = document.createElement('div');
+            el.className = 'fav-item';
+            const imgHtml = (it.image && (it.image.startsWith('http')||it.image.startsWith('https'))) ? `<img src="${it.image}" onerror="this.style.display='none'">` : `<div style="font-size:2.2rem">${it.image||'👕'}</div>`;
+            el.innerHTML = `
+                <div>${imgHtml}</div>
+                <div style="min-width:220px">
+                    <strong>${it.name || it.productName}</strong>
+                    <div style="color:#666">${it.description||''}</div>
+                    <div style="margin-top:6px">${formatINR(it.price||0)}</div>
+                </div>
+                <div class="fav-actions">
+                    <button class="btn" data-id="${it.id||''}" data-name="${(it.name||it.productName).replace(/"/g,'&quot;')}">Add to Cart</button>
+                    <button class="btn" data-remove-id="${it.id||''}">Remove</button>
+                </div>
+            `;
+            container.appendChild(el);
+        });
+
+        // Wire up buttons (robust handlers)
+        container.querySelectorAll('button[data-id]').forEach(btn => btn.addEventListener('click', (e) => {
+            const target = e.currentTarget;
+            const id = target.dataset.id;
+            const name = target.dataset.name;
+
+            // Try to find item in local wishlist
+            let wishlist = JSON.parse(localStorage.getItem('kayalWishlist')||'[]');
+            let item = wishlist.find(x => String(x.id) === String(id)) || wishlist.find(x => (x.name||x.productName) === name);
+
+            // If not found and id present, try to fetch product from API
+            (async () => {
+                if (!item && id) {
+                    try {
+                        const res = await fetch(`${API_URL}/products/${id}`);
+                        if (res.ok) item = await res.json();
+                    } catch (err) { /* ignore */ }
+                }
+
+                // Default fallback if still not found
+                if (!item) {
+                    item = { id: id || Date.now(), name: name || 'Item', price: 0 };
+                }
+
+                let cart = JSON.parse(localStorage.getItem('kayalCart')||'[]');
+                const existing = cart.find(c => String(c.id) === String(item.id));
+                if (existing) {
+                    existing.quantity = (existing.quantity || 1) + 1;
+                } else {
+                    cart.push({ id: item.id || Date.now(), name: item.name || item.productName, price: item.price || 0, quantity: 1 });
+                }
+                localStorage.setItem('kayalCart', JSON.stringify(cart));
+
+                // Use global updater if present
+                if (typeof updateCartCount === 'function') {
+                    try { updateCartCount(); } catch (e) { /* ignore */ }
+                }
+
+                // Use common notification if available
+                if (typeof showNotification === 'function') {
+                    showNotification(`${item.name || 'Item'} added to cart`);
+                } else {
+                    alert(`${item.name || 'Item'} added to cart`);
+                }
+            })();
+        }));
+
+        container.querySelectorAll('button[data-remove-id]').forEach(b=>b.addEventListener('click', async (e)=>{
+            const rid = b.dataset.removeId;
+            // remove locally
+            let wishlist = JSON.parse(localStorage.getItem('kayalWishlist')||'[]');
+            wishlist = wishlist.filter(x => String(x.id) !== String(rid));
+            localStorage.setItem('kayalWishlist', JSON.stringify(wishlist));
+            // try server removal if logged in and rid is numeric
+            try{
+                const token = localStorage.getItem('kayalToken');
+                if(token && rid){
+                    const res = await fetch(`${API_URL}/wishlist/${rid}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                    if(!res.ok) console.warn('Server remove failed');
+                }
+            }catch(err){ console.warn(err); }
+            renderLocalFavorites(wishlist);
+        }));
+    }
+
+    async function loadFavorites(){
+        const user = localStorage.getItem('kayalUser');
+        const token = localStorage.getItem('kayalToken');
+        const container = document.getElementById('favList');
+        container.innerHTML = '<div class="empty">Loading favorites...</div>';
+
+        if(user && token){
+            try{
+                const uid = JSON.parse(user).id;
+                const res = await fetch(`${API_URL}/user/${uid}/wishlist`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if(res.ok){
+                    const data = await res.json();
+                    if(Array.isArray(data) && data.length>0){
+                        // normalize server items to familiar shape
+                        const items = data.map(it => ({ id: it.id, productName: it.productName, price: it.price }));
+                        renderLocalFavorites(items);
+                        return;
+                    }
+                }
+            }catch(e){ console.warn('Error loading server wishlist', e); }
+        }
+
+        // fallback to localStorage
+        const localFavs = JSON.parse(localStorage.getItem('kayalWishlist')||'[]');
+        renderLocalFavorites(localFavs);
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{
+        loadFavorites();
+    });
+    </script>
+</body>
+</html>

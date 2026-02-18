@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop - Kayal T-Shirt Store</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="logo" href="index.html">KAYAL</a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html" class="active">Shop</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="cart.html" class="cart-icon">🛒 Cart (0)</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Shop Header -->
+    <section class="shop-header">
+        <h1>Our T-Shirt Collection</h1>
+        <p>Browse our latest designs and premium quality t-shirts</p>
+    </section>
+
+    <!-- Filters -->
+    <section class="shop-container">
+        <aside class="filters">
+            <h3>Filters</h3>
+            <div class="filter-group">
+                <label>Price Range</label>
+                <input type="range" min="10" max="50" id="priceRange">
+                <p>Max: ₹<span id="priceValue" data-usd="50">50</span></p>
+            </div>
+            <div class="filter-group">
+                <label>Size</label>
+                <input type="checkbox" value="XS"> XS
+                <input type="checkbox" value="S"> S
+                <input type="checkbox" value="M"> M
+                <input type="checkbox" value="L"> L
+                <input type="checkbox" value="XL"> XL
+            </div>
+            <div class="filter-group">
+                <label>Color</label>
+                <input type="checkbox" value="White"> White
+                <input type="checkbox" value="Black"> Black
+                <input type="checkbox" value="Blue"> Blue
+                <input type="checkbox" value="Red"> Red
+                <input type="checkbox" value="Green"> Green
+            </div>
+        </aside>
+
+        <!-- Products -->
+        <main class="products-section">
+            <div class="sort-bar">
+                <label>Sort by:</label>
+                <select onchange="sortProducts(this.value)">
+                    <option value="featured">Featured</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="newest">Newest</option>
+                </select>
+            </div>
+
+            <div class="products-grid products-shop">
+                <!-- Products will be loaded dynamically from the database -->
+                <div class="loading-message">Loading products...</div>
+            </div>
+        </main>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About Kayal</h4>
+                <p>Your go-to destination for premium quality t-shirts with style and comfort.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="shop.html">Shop</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#" class="social-link">Facebook</a>
+                    <a href="#" class="social-link">Instagram</a>
+                    <a href="#" class="social-link">Twitter</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Kayal T-Shirt Shop. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

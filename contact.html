@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Kayal T-Shirt Store</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="logo" href="index.html">KAYAL</a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html" class="active">Contact</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="cart.html" class="cart-icon">🛒 Cart (0)</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contact Header -->
+    <section class="contact-header">
+        <h1>Get In Touch</h1>
+        <p>We'd love to hear from you. Let's connect!</p>
+    </section>
+
+    <!-- Contact Content -->
+    <section class="contact-content">
+        <div class="contact-methods">
+            <div class="contact-card">
+                <div class="contact-icon">📍</div>
+                <h3>Address</h3>
+                <p>343 South Street <br>Edayakurichy,Andimadam(TK)<br>Ariyalur(DT),Tamil nadu,621719</p>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">📞</div>
+                <h3>Phone</h3>
+                <p>+91 9047241982<br>Mon - Fri: 9AM - 6PM EST<br>Sat - Sun: 10AM - 4PM EST</p>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">✉️</div>
+                <h3>Email</h3>
+                <p>hello@kayal.com<br>support@kayal.com<br>orders@kayal.com</p>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">💬</div>
+                <h3>Live Chat</h3>
+                <p>Available 24/7<br>Chat with our team instantly<br>Response within 5 minutes</p>
+            </div>
+        </div>
+
+        <div class="contact-form-section">
+            <h2>Send us a Message</h2>
+            <form class="contact-form" onsubmit="handleContactForm(event)">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject *</label>
+                    <select id="subject" name="subject" required>
+                        <option value="">Select a subject</option>
+                        <option value="product-inquiry">Product Inquiry</option>
+                        <option value="order-issue">Order Issue</option>
+                        <option value="return-exchange">Return/Exchange</option>
+                        <option value="feedback">Feedback</option>
+                        <option value="bulk-order">Bulk Order</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="message">Message *</label>
+                    <textarea id="message" name="message" rows="6" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h3>What's your return policy?</h3>
+                <p>We offer 30-day money-back guarantee on all products. If you're not satisfied, contact us for a full refund or exchange.</p>
+            </div>
+            <div class="faq-item">
+                <h3>How long does shipping take?</h3>
+                <p>Standard shipping takes 5-7 business days. Express shipping is available for 2-3 business days delivery.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Do you offer bulk orders?</h3>
+                <p>Yes! We offer special pricing for bulk orders. Contact our team at orders@kayal.com for quotes.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Are your t-shirts organic?</h3>
+                <p>Yes, all our t-shirts are made from 100% organic cotton with sustainable and eco-friendly production.</p>
+            </div>
+            <div class="faq-item">
+                <h3>What sizes do you offer?</h3>
+                <p>We offer sizes XS to 3XL in most of our collections. Check the product page for specific size availability.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Do you offer gift cards?</h3>
+                <p>Yes! Gift cards are available in various amounts. Perfect for any occasion. Email us for more details.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter">
+        <h2>Stay Connected</h2>
+        <p>Get the latest updates, promotions, and exclusive offers</p>
+        <form class="newsletter-form" onsubmit="handleNewsletter(event)">
+            <input type="email" placeholder="Enter your email" required>
+            <button type="submit" class="btn btn-primary">Subscribe</button>
+        </form>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>About Kayal</h4>
+                <p>Your go-to destination for premium quality t-shirts with style and comfort.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="shop.html">Shop</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#" class="social-link">Facebook</a>
+                    <a href="#" class="social-link">Instagram</a>
+                    <a href="#" class="social-link">Twitter</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Kayal T-Shirt Shop. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>My Orders - Kayal</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .orders-container{max-width:1000px;margin:2rem auto;padding:0 1rem}
+        .order-card{background:white;padding:1.5rem;margin-bottom:1rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+        .order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+        .order-status{padding:0.25rem 0.5rem;border-radius:4px;font-size:0.85rem;font-weight:600}
+        .status-pending{background:#fff3cd;color:#856404}
+        .status-processing{background:#d1ecf1;color:#0c5460}
+        .status-completed{background:#d4edda;color:#155724}
+        .status-cancelled{background:#f8d7da;color:#721c24}
+        .order-item{display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid #eee}
+        .order-total{font-weight:800;margin-top:1rem;text-align:right}
+        .no-orders{text-align:center;padding:2rem;color:#666}
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a class="logo" href="index.html">KAYAL</a>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="orders-container">
+        <h1>My Orders</h1>
+        <div id="ordersContainer">
+            <p>Loading orders...</p>
+        </div>
+    </main>
+
+    <script src="auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(localStorage.getItem('kayalUser') || '{}');
+            const token = localStorage.getItem('kayalToken');
+
+            if (!user.id || !token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/user/${user.id}/orders`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const orders = await response.json();
+                const container = document.getElementById('ordersContainer');
+
+                if (orders.length === 0) {
+                    container.innerHTML = '<div class="no-orders"><h2>No orders yet</h2><p>Start shopping to place your first order!</p><a href="shop.html" class="btn btn-primary">Shop Now</a></div>';
+                } else {
+                    container.innerHTML = '';
+                    orders.forEach(order => {
+                        const orderCard = document.createElement('div');
+                        orderCard.className = 'order-card';
+                        orderCard.innerHTML = `
+                            <div class="order-header">
+                                <h3>Order #${order.orderNumber}</h3>
+                                <span class="order-status status-${order.status.toLowerCase()}">${order.status}</span>
+                            </div>
+                            <p><strong>Date:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+                            <div id="items-${order.id}"></div>
+                            <div class="order-total">Total: $${order.totalAmount}</div>
+                        `;
+                        container.appendChild(orderCard);
+
+                        // Load order items
+                        fetch(`${API_URL}/orders/${order.id}/items`, {
+                            headers: { 'Authorization': 'Bearer ' + token }
+                        })
+                        .then(res => res.json())
+                        .then(items => {
+                            const itemsDiv = document.getElementById(`items-${order.id}`);
+                            if (items.length > 0) {
+                                itemsDiv.innerHTML = '<h4>Items:</h4>';
+                                items.forEach(item => {
+                                    const itemDiv = document.createElement('div');
+                                    itemDiv.className = 'order-item';
+                                    itemDiv.innerHTML = `<span>${item.productName} (${item.size}, ${item.color}) x ${item.quantity}</span><span>$${item.price * item.quantity}</span>`;
+                                    itemsDiv.appendChild(itemDiv);
+                                });
+                            }
+                        })
+                        .catch(err => console.error('Error loading items:', err));
+                    });
+                }
+            } catch (error) {
+                document.getElementById('ordersContainer').innerHTML = '<p>Error loading orders. Please try again.</p>';
+                console.error('Error loading orders:', error);
+            }
+        });
+    </script>
+</body>
+</html>
