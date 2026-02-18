@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', loadRememberedEmail);
 
 // Attach handlers for social login buttons (Google / Facebook)
 document.addEventListener('DOMContentLoaded', () => {
-    const serverOrigin = window.location.origin || 'http://localhost:3000';
+    const serverOrigin = window.location.origin || 'https://backend-production-4bcf.up.railway.app';
 
     // Generic social sign-in handler
     function socialSignIn(provider) {
@@ -366,3 +366,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 });
+
